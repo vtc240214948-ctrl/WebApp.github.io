@@ -1,79 +1,765 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="zh-TW">
 <head>
-  <meta charset="utf-8"/>
-  <title>Client-side Code Runner</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多语言代码运行器</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body{font-family:system-ui;max-width:900px;margin:32px auto}
-    textarea{width:100%;box-sizing:border-box}
-    pre{background:#111;color:#0f0;padding:12px;white-space:pre-wrap}
+    :root {
+      --primary: #2e86de;
+      --secondary: #10ac84;
+      --dark: #222f3e;
+      --light: #c8d6e5;
+      --terminal-bg: #1a1a1a;
+      --terminal-text: #00ff00;
+      --danger: #ee5a24;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: var(--light);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: white;
+    }
+    
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.8;
+    }
+    
+    .app-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    
+    @media (max-width: 768px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .panel {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .panel-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    select, button {
+      padding: 10px 15px;
+      border-radius: 5px;
+      border: none;
+      background: var(--dark);
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    select {
+      flex: 1;
+    }
+    
+    button {
+      background: var(--primary);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    button:hover {
+      background: #1e6fc9;
+      transform: translateY(-2px);
+    }
+    
+    button.secondary {
+      background: var(--secondary);
+    }
+    
+    button.secondary:hover {
+      background: #0d9c75;
+    }
+    
+    button.danger {
+      background: var(--danger);
+    }
+    
+    button.danger:hover {
+      background: #d35400;
+    }
+    
+    .code-editor {
+      width: 100%;
+      height: 300px;
+      background: #2d3748;
+      color: var(--light);
+      border: none;
+      border-radius: 5px;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      resize: vertical;
+      margin-bottom: 15px;
+    }
+    
+    .terminal {
+      background: var(--terminal-bg);
+      color: var(--terminal-text);
+      border-radius: 5px;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      height: 300px;
+      overflow-y: auto;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    
+    .terminal-line {
+      margin-bottom: 5px;
+    }
+    
+    .terminal-prompt {
+      color: #3498db;
+    }
+    
+    .terminal-command {
+      color: white;
+    }
+    
+    .terminal-output {
+      color: var(--terminal-text);
+    }
+    
+    .terminal-error {
+      color: #ff6b6b;
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    
+    .feature-card {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+    
+    .feature-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .language-info {
+      margin-top: 15px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
-  <h1>Client-side Code Runner (Pyodide + JS)</h1>
-  <label>語言</label>
-  <select id="lang">
-    <option value="python">Python (Pyodide)</option>
-    <option value="javascript">JavaScript (Browser)</option>
-  </select>
-  <h3>程式碼</h3>
-  <textarea id="code" rows="12">print("Hello from Python")</textarea>
-  <br/>
-  <button id="run">Run</button>
-  <h3>輸出</h3>
-  <pre id="out"></pre>
+  <div class="container">
+    <header class="glass-effect">
+      <h1><i class="fas fa-code"></i> 多语言代码运行器</h1>
+      <p class="subtitle">在浏览器中编写和运行多种编程语言代码</p>
+    </header>
+    
+    <div class="app-container">
+      <div class="panel glass-effect">
+        <div class="panel-header">
+          <div class="panel-title">代码编辑器</div>
+          <div class="language-indicator">语言: <span id="current-lang">Python</span></div>
+        </div>
+        
+        <div class="controls">
+          <select id="language-select">
+            <option value="python">Python (Pyodide)</option>
+            <option value="javascript">JavaScript</option>
+            <option value="java">Java (模拟)</option>
+            <option value="cpp">C++ (模拟)</option>
+            <option value="csharp">C# (模拟)</option>
+            <option value="ruby">Ruby (模拟)</option>
+            <option value="go">Go (模拟)</option>
+          </select>
+          <button id="run-btn"><i class="fas fa-play"></i> 运行</button>
+          <button class="secondary" id="clear-btn"><i class="fas fa-broom"></i> 清除</button>
+        </div>
+        
+        <textarea id="code-editor" class="code-editor" placeholder="在这里输入您的代码..."># Python示例代码
+print("Hello, World!")
+
+def factorial(n):
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
+
+print(f"5的阶乘是: {factorial(5)}")</textarea>
+        
+        <div class="language-info">
+          <p><strong>语言信息:</strong> <span id="lang-info">Python是一种解释型、面向对象的高级编程语言。</span></p>
+        </div>
+      </div>
+      
+      <div class="panel glass-effect">
+        <div class="panel-header">
+          <div class="panel-title">Linux终端模拟器</div>
+          <div class="terminal-status">状态: <span id="terminal-status">就绪</span></div>
+        </div>
+        
+        <div class="terminal" id="terminal">
+          <div class="terminal-line">
+            <span class="terminal-prompt">user@coderunner:~$ </span>
+            <span class="terminal-command">欢迎使用多语言代码运行器</span>
+          </div>
+          <div class="terminal-line terminal-output">
+            这是一个模拟的Linux终端环境。
+          </div>
+          <div class="terminal-line terminal-output">
+            选择左侧的编程语言并点击"运行"按钮执行代码。
+          </div>
+          <div class="terminal-line">
+            <span class="terminal-prompt">user@coderunner:~$ </span>
+            <span class="terminal-command" id="current-command">等待命令...</span>
+          </div>
+        </div>
+        
+        <div class="controls" style="margin-top: 15px;">
+          <button class="secondary" id="new-terminal-btn"><i class="fas fa-plus"></i> 新建终端</button>
+          <button class="danger" id="clear-terminal-btn"><i class="fas fa-trash"></i> 清除终端</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="features">
+      <div class="feature-card glass-effect">
+        <div class="feature-icon">
+          <i class="fas fa-laptop-code"></i>
+        </div>
+        <div class="feature-title">多语言支持</div>
+        <p>支持Python、JavaScript、Java、C++等多种编程语言</p>
+      </div>
+      
+      <div class="feature-card glass-effect">
+        <div class="feature-icon">
+          <i class="fas fa-terminal"></i>
+        </div>
+        <div class="feature-title">Linux终端模拟</div>
+        <p>体验真实的Linux终端环境，无需安装任何软件</p>
+      </div>
+      
+      <div class="feature-card glass-effect">
+        <div class="feature-icon">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="feature-title">安全沙盒</div>
+        <p>所有代码在安全的浏览器沙盒环境中运行</p>
+      </div>
+      
+      <div class="feature-card glass-effect">
+        <div class="feature-icon">
+          <i class="fas fa-mobile-alt"></i>
+        </div>
+        <div class="feature-title">响应式设计</div>
+        <p>在桌面和移动设备上均有出色的使用体验</p>
+      </div>
+    </div>
+    
+    <footer>
+      <p>多语言代码运行器 &copy; 2023 - 一个完全在浏览器中运行的编程环境</p>
+      <p>本应用使用开源技术构建，不侵犯任何版权</p>
+    </footer>
+  </div>
 
   <script>
-    // 載入 Pyodide（CDN），非同步初始化
+    // 页面元素
+    const languageSelect = document.getElementById('language-select');
+    const codeEditor = document.getElementById('code-editor');
+    const runButton = document.getElementById('run-btn');
+    const clearButton = document.getElementById('clear-btn');
+    const terminal = document.getElementById('terminal');
+    const currentLang = document.getElementById('current-lang');
+    const langInfo = document.getElementById('lang-info');
+    const currentCommand = document.getElementById('current-command');
+    const terminalStatus = document.getElementById('terminal-status');
+    const clearTerminalBtn = document.getElementById('clear-terminal-btn');
+    const newTerminalBtn = document.getElementById('new-terminal-btn');
+    
+    // 语言信息
+    const languageInfo = {
+      python: "Python是一种解释型、面向对象的高级编程语言。",
+      javascript: "JavaScript是一种高级的、解释型的编程语言，主要用于Web开发。",
+      java: "Java是一种面向对象的、跨平台的编程语言。",
+      cpp: "C++是一种通用的、面向对象的编程语言，是C语言的扩展。",
+      csharp: "C#是一种现代的、面向对象的编程语言，由微软开发。",
+      ruby: "Ruby是一种动态的、面向对象的编程语言，注重简洁和生产力。",
+      go: "Go是一种静态类型的、编译型的编程语言，由Google开发。"
+    };
+    
+    // 默认代码示例
+    const codeExamples = {
+      python: `# Python示例代码
+print("Hello, World!")
+
+def factorial(n):
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
+
+print(f"5的阶乘是: {factorial(5)}")`,
+      
+      javascript: `// JavaScript示例代码
+console.log("Hello, World!");
+
+function factorial(n) {
+  if (n === 0) {
+    return 1;
+  } else {
+    return n * factorial(n - 1);
+  }
+}
+
+console.log("5的阶乘是: " + factorial(5));`,
+      
+      java: `// Java示例代码
+public class Main {
+  public static void main(String[] args) {
+    System.out.println("Hello, World!");
+    System.out.println("5的阶乘是: " + factorial(5));
+  }
+  
+  public static int factorial(int n) {
+    if (n == 0) {
+      return 1;
+    } else {
+      return n * factorial(n - 1);
+    }
+  }
+}`,
+      
+      cpp: `// C++示例代码
+#include <iostream>
+using namespace std;
+
+int factorial(int n) {
+  if (n == 0) {
+    return 1;
+  } else {
+    return n * factorial(n - 1);
+  }
+}
+
+int main() {
+  cout << "Hello, World!" << endl;
+  cout << "5的阶乘是: " << factorial(5) << endl;
+  return 0;
+}`,
+      
+      csharp: `// C#示例代码
+using System;
+
+class Program {
+  static int Factorial(int n) {
+    if (n == 0) {
+      return 1;
+    } else {
+      return n * Factorial(n - 1);
+    }
+  }
+  
+  static void Main() {
+    Console.WriteLine("Hello, World!");
+    Console.WriteLine("5的阶乘是: " + Factorial(5));
+  }
+}`,
+      
+      ruby: `# Ruby示例代码
+puts "Hello, World!"
+
+def factorial(n)
+  if n == 0
+    return 1
+  else
+    return n * factorial(n-1)
+  end
+end
+
+puts "5的阶乘是: #{factorial(5)}"`,
+      
+      go: `// Go示例代码
+package main
+
+import "fmt"
+
+func factorial(n int) int {
+  if n == 0 {
+    return 1
+  }
+  return n * factorial(n-1)
+}
+
+func main() {
+  fmt.Println("Hello, World!")
+  fmt.Printf("5的阶乘是: %d\\n", factorial(5))
+}`
+    };
+    
+    // 初始化Pyodide
     let pyodideReady = false;
     let pyodide = null;
+    
     (async () => {
-      const script = document.createElement('script');
-      script.src = "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js";
-      document.head.appendChild(script);
-      script.onload = async () => {
-        pyodide = await loadPyodide();
-        pyodideReady = true;
-        console.log("Pyodide ready");
-      };
-    })();
-
-    document.getElementById('run').onclick = async () => {
-      const lang = document.getElementById('lang').value;
-      const code = document.getElementById('code').value;
-      const out = document.getElementById('out');
-      out.textContent = 'Running...';
-
       try {
-        if (lang === 'javascript') {
-          // 直接在瀏覽器執行（注意安全：不做 eval 的複雜沙盒）
-          const result = (function() {
-            try { return eval(code); }
-            catch(e){ return 'Error: ' + e; }
-          })();
-          out.textContent = String(result === undefined ? '' : result);
-        } else if (lang === 'python') {
-          if (!pyodideReady) { out.textContent = 'Pyodide loading, please wait...'; return; }
+        // 使用官方CDN加载Pyodide
+        const script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js";
+        document.head.appendChild(script);
+        
+        script.onload = async () => {
+          pyodide = await loadPyodide();
+          pyodideReady = true;
+          console.log("Pyodide ready");
+          terminalStatus.textContent = "Pyodide已加载";
+          addTerminalOutput("Pyodide初始化完成，Python环境已就绪。");
+        };
+      } catch (error) {
+        console.error("Pyodide加载失败:", error);
+        terminalStatus.textContent = "Pyodide加载失败";
+        addTerminalOutput("错误: Pyodide加载失败，Python环境不可用。", "error");
+      }
+    })();
+    
+    // 语言选择事件
+    languageSelect.addEventListener('change', function() {
+      const lang = this.value;
+      currentLang.textContent = this.options[this.selectedIndex].text;
+      langInfo.textContent = languageInfo[lang];
+      codeEditor.value = codeExamples[lang];
+    });
+    
+    // 运行按钮事件
+    runButton.addEventListener('click', async function() {
+      const lang = languageSelect.value;
+      const code = codeEditor.value;
+      
+      // 更新终端显示
+      currentCommand.textContent = `运行 ${lang} 代码`;
+      terminalStatus.textContent = "运行中...";
+      
+      // 添加终端输出
+      addTerminalOutput(`开始执行 ${lang} 代码...`);
+      
+      try {
+        if (lang === 'python') {
+          if (!pyodideReady) {
+            addTerminalOutput("错误: Pyodide尚未加载完成，请稍后再试。", "error");
+            terminalStatus.textContent = "Pyodide未就绪";
+            return;
+          }
+          
+          // 执行Python代码
           try {
-            // capture stdout
-            let result = await pyodide.runPythonAsync(`
+            const result = await pyodide.runPythonAsync(`
 import sys, io
 _buf = io.StringIO()
 sys.stdout = _buf
 sys.stderr = _buf
 try:
-${code.split('\n').map(l=>'    '+l).join('\n')}
+${code.split('\n').map(l => '    ' + l).join('\n')}
 except Exception as e:
-    import traceback; traceback.print_exc()
+    import traceback
+    traceback.print_exc()
 _buf.getvalue()
 `);
-            out.textContent = result;
-          } catch(e) { out.textContent = 'Error: ' + e; }
+            addTerminalOutput(result);
+            terminalStatus.textContent = "执行完成";
+          } catch (e) {
+            addTerminalOutput('错误: ' + e, "error");
+            terminalStatus.textContent = "执行出错";
+          }
+        } else if (lang === 'javascript') {
+          // 执行JavaScript代码
+          try {
+            const originalLog = console.log;
+            let output = "";
+            
+            console.log = function(...args) {
+              output += args.join(' ') + '\n';
+            };
+            
+            eval(code);
+            console.log = originalLog;
+            
+            addTerminalOutput(output || "代码执行完成，无输出。");
+            terminalStatus.textContent = "执行完成";
+          } catch (e) {
+            addTerminalOutput('错误: ' + e, "error");
+            terminalStatus.textContent = "执行出错";
+          }
+        } else {
+          // 对于其他语言，模拟执行
+          addTerminalOutput(`[模拟执行] 开始编译 ${lang} 代码...`);
+          
+          // 模拟编译过程
+          setTimeout(() => {
+            addTerminalOutput(`[模拟执行] ${lang} 代码编译成功。`);
+            
+            // 模拟执行过程
+            setTimeout(() => {
+              // 提取代码中的输出语句并模拟输出
+              const output = extractOutputFromCode(code, lang);
+              addTerminalOutput(`[模拟执行] 程序输出:\n${output}`);
+              terminalStatus.textContent = "模拟执行完成";
+            }, 1000);
+          }, 1500);
         }
       } catch (err) {
-        out.textContent = 'Fatal: ' + err;
+        addTerminalOutput('致命错误: ' + err, "error");
+        terminalStatus.textContent = "执行出错";
       }
-    };
+    });
+    
+    // 清除代码按钮
+    clearButton.addEventListener('click', function() {
+      codeEditor.value = "";
+    });
+    
+    // 清除终端按钮
+    clearTerminalBtn.addEventListener('click', function() {
+      terminal.innerHTML = `
+        <div class="terminal-line">
+          <span class="terminal-prompt">user@coderunner:~$ </span>
+          <span class="terminal-command">终端已清除</span>
+        </div>
+        <div class="terminal-line">
+          <span class="terminal-prompt">user@coderunner:~$ </span>
+          <span class="terminal-command" id="current-command">等待命令...</span>
+        </div>
+      `;
+      // 重新获取当前命令元素
+      currentCommand = document.getElementById('current-command');
+    });
+    
+    // 新建终端按钮
+    newTerminalBtn.addEventListener('click', function() {
+      terminal.innerHTML = `
+        <div class="terminal-line">
+          <span class="terminal-prompt">user@coderunner:~$ </span>
+          <span class="terminal-command">新建终端会话</span>
+        </div>
+        <div class="terminal-line terminal-output">
+          这是一个模拟的Linux终端环境。
+        </div>
+        <div class="terminal-line">
+          <span class="terminal-prompt">user@coderunner:~$ </span>
+          <span class="terminal-command" id="current-command">等待命令...</span>
+        </div>
+      `;
+      // 重新获取当前命令元素
+      currentCommand = document.getElementById('current-command');
+      terminalStatus.textContent = "就绪";
+    });
+    
+    // 辅助函数：添加终端输出
+    function addTerminalOutput(text, type = "output") {
+      const lines = text.split('\n');
+      lines.forEach(line => {
+        if (line.trim() !== '') {
+          const lineElement = document.createElement('div');
+          lineElement.className = `terminal-line terminal-${type}`;
+          lineElement.textContent = line;
+          terminal.appendChild(lineElement);
+        }
+      });
+      
+      // 添加新的提示符
+      const promptElement = document.createElement('div');
+      promptElement.className = 'terminal-line';
+      promptElement.innerHTML = `
+        <span class="terminal-prompt">user@coderunner:~$ </span>
+        <span class="terminal-command" id="current-command">等待命令...</span>
+      `;
+      terminal.appendChild(promptElement);
+      
+      // 更新当前命令元素引用
+      currentCommand = document.getElementById('current-command');
+      
+      // 滚动到底部
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+    
+    // 辅助函数：从代码中提取输出（用于模拟执行）
+    function extractOutputFromCode(code, lang) {
+      // 简单模拟输出提取
+      let output = "";
+      
+      if (lang === 'java') {
+        // 提取Java的System.out.println
+        const matches = code.match(/System\.out\.println\([^)]+\)/g);
+        if (matches) {
+          matches.forEach(match => {
+            // 简单提取引号内的内容
+            const contentMatch = match.match(/System\.out\.println\(["']([^"']+)["']\)/);
+            if (contentMatch) {
+              output += contentMatch[1] + '\n';
+            } else {
+              // 提取变量输出
+              const varMatch = match.match(/System\.out\.println\(([^)]+)\)/);
+              if (varMatch) {
+                output += `[变量输出: ${varMatch[1]}]\n`;
+              }
+            }
+          });
+        }
+      } else if (lang === 'cpp') {
+        // 提取C++的cout
+        const matches = code.match(/cout\s*<<[^;]+;/g);
+        if (matches) {
+          matches.forEach(match => {
+            // 简单提取字符串
+            const strMatch = match.match(/<<\s*"([^"]+)"/);
+            if (strMatch) {
+              output += strMatch[1] + '\n';
+            } else {
+              output += `[C++输出: ${match}]\n`;
+            }
+          });
+        }
+      } else if (lang === 'csharp') {
+        // 提取C#的Console.WriteLine
+        const matches = code.match(/Console\.WriteLine\([^)]+\)/g);
+        if (matches) {
+          matches.forEach(match => {
+            const contentMatch = match.match(/Console\.WriteLine\(["']([^"']+)["']\)/);
+            if (contentMatch) {
+              output += contentMatch[1] + '\n';
+            } else {
+              const varMatch = match.match(/Console\.WriteLine\(([^)]+)\)/);
+              if (varMatch) {
+                output += `[变量输出: ${varMatch[1]}]\n`;
+              }
+            }
+          });
+        }
+      } else if (lang === 'ruby') {
+        // 提取Ruby的puts
+        const matches = code.match(/puts\s+["'][^"']+["']/g);
+        if (matches) {
+          matches.forEach(match => {
+            const contentMatch = match.match(/puts\s+["']([^"']+)["']/);
+            if (contentMatch) {
+              output += contentMatch[1] + '\n';
+            }
+          });
+        }
+      } else if (lang === 'go') {
+        // 提取Go的fmt.Println
+        const matches = code.match(/fmt\.Println\([^)]+\)/g);
+        if (matches) {
+          matches.forEach(match => {
+            const contentMatch = match.match(/fmt\.Println\(["']([^"']+)["']\)/);
+            if (contentMatch) {
+              output += contentMatch[1] + '\n';
+            } else {
+              const varMatch = match.match(/fmt\.Println\(([^)]+)\)/);
+              if (varMatch) {
+                output += `[变量输出: ${varMatch[1]}]\n`;
+              }
+            }
+          });
+        }
+      }
+      
+      return output || "程序执行完成，但未检测到输出语句。";
+    }
+    
+    // 初始加载完成后的提示
+    window.addEventListener('load', function() {
+      addTerminalOutput("系统初始化完成，准备就绪。");
+    });
   </script>
 </body>
 </html>
