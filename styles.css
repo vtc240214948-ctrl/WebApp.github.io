@@ -1,60 +1,10 @@
-/* styles.css */
-:root {
-  --max-width: 900px;
-  --gap: 12px;
-  --bg: #fff;
-  --muted: #666;
-}
-
-body {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: #f5f7fb;
-  margin: 0;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.container {
-  max-width: var(--max-width);
-  width: 100%;
-  background: var(--bg);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(20,30,40,0.08);
-}
-
-h1 { margin-top: 0; }
-.controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: var(--gap);
-  flex-wrap: wrap;
-}
-.controls label { margin-right: 6px; color: var(--muted); }
-.controls button { padding: 6px 10px; }
-textarea#code {
-  width: 100%;
-  box-sizing: border-box;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
-  font-size: 13px;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  resize: vertical;
-}
-.extras {
-  margin-top: 8px;
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
 .output {
-  background: #0f0f0f;
-  color: #cfe;
-  padding: 12px;
-  border-radius: 6px;
-  white-space: pre-wrap;
-  min-height: 160px;
-  overflow: auto;
+  background-color: #ffffff; /* 白色背景 */
+  color: #000000; /* 黑色字體 */
+  padding: 10px;
+  border: 1px solid #ccc; /* 淺灰色邊框 */
+  border-radius: 4px;
+  font-family: Consolas, "Courier New", monospace;
+  white-space: pre-wrap; /* 保持換行格式 */
+  overflow-y: auto; /* 有內容時可滾動 */
+}
