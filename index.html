@@ -2,68 +2,144 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>分享美好事物</title>
+  <title>簡易聊天室 (Demo)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body { font-family: 'Helvetica Neue', 'Microsoft JhengHei', sans-serif; background: #eef2f3; margin:0; }
-    h1 { background: #80d0c7; color: white; text-align: center; margin: 0 0 25px 0; padding:25px 0 15px 0; border-radius: 0 0 1em 1em; }
-    .container { max-width: 430px; margin: 24px auto; background: white; padding: 1.4em; border-radius: 1em; box-shadow:0 2px 14px #c7ecee88;}
-    textarea, input[type="file"] { width: 100%; font-size: 1.05em; margin-bottom: 1em; box-sizing: border-box; }
-    button { background: #80d0c7; color: #fff; border: none; border-radius: 7px; padding: 8px 18px; font-size: 1em; cursor: pointer; }
-    button:hover { background: #53b2a5; }
-    .posts { margin-top: 28px; }
-    .post { background: #fff; padding: 18px; border-radius: 1em; margin-bottom: 22px; box-shadow: 0 2px 10px #b8e99455; }
-    .post img { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 10px; }
-    .caption { font-size: 1.1em; margin-top: 3px; color: #444; }
-    .date { color: #bbb; font-size: 0.9em; margin-top: 7px; }
+    body { font-family: 'Helvetica Neue', 'Microsoft JhengHei', sans-serif; background: #e7f3fa; margin:0;}
+    h1 { text-align:center; background:#5095d6; color:#fff; margin:0 0 20px; padding:22px 0; border-radius:0 0 1em 1em; }
+    .wrapper { max-width:500px; margin:0 auto; background:#fff; border-radius:12px; box-shadow:0 1px 10px #0002; padding:1.4em;}
+    .login { text-align:center; }
+    .login input { width:90%; font-size:1em; margin:0.35em; padding:5px 8px; border-radius:8px; border:1px solid #5095d6; }
+    .login button { background:#5095d6; color:#fff; padding:7px 24px; border:none; border-radius:7px; font-size:1em; cursor:pointer;}
+    .chatroom { display:none; flex-direction:column; height:480px; }
+    .chat-messages { flex:1; overflow-y:auto; border:1px solid #e1e1e1; border-radius:8px; margin-bottom:10px; padding:10px; background:#f6fbff; min-height:220px;}
+    .message { margin-bottom:13px; }
+    .sender { font-weight:bold; color: #2569b3; }
+    .timestamp { color: #aaa; font-size:0.92em; margin-left:6px;}
+    .chat-actions { display:flex; gap:6px; }
+    .chat-actions input[type="text"] { flex:1; border-radius:7px; padding:7px; border:1px solid #5095d6;}
+    .chat-actions button { border-radius:7px; border:none; padding:8px 18px; background:#5095d6; color:#fff; cursor:pointer;}
+    .chat-actions input[type="file"] { padding:5px;}
+    .file-link { text-decoration:underline; color:#5087ad; font-size:0.99em;}
+    .chat-header { margin-bottom: 0.8em; }
+    .logout { float:right; font-size:0.89em; color:#888; text-decoration:underline; border:none; background:transparent; cursor:pointer;}
   </style>
 </head>
 <body>
-  <h1>🌸 分享美好事物</h1>
-  <div class="container">
-    <form id="postForm">
-      <textarea id="caption" rows="3" placeholder="想說的一句話或故事..." required></textarea>
-      <input type="file" id="imageInput" accept="image/*">
-      <div id="previewArea" style="margin-bottom:12px;"></div>
-      <button type="submit">分享</button>
-    </form>
-    <div class="posts" id="posts"></div>
+  <h1>☁️ 團隊聊天室 Demo</h1>
+  <div class="wrapper">
+    <div class="login" id="login-panel">
+      <h2>登入 / 註冊</h2>
+      <input type="text" id="register-username" placeholder="輸入用戶名（註冊）" autocomplete="off"/>
+      <input type="password" id="register-password" placeholder="密碼（4字以上）"/>
+      <button onclick="register()">註冊</button>
+      <hr style="margin: 18px 0;">
+      <input type="text" id="login-username" placeholder="用戶名（登入）"/>
+      <input type="password" id="login-password" placeholder="密碼"/>
+      <button onclick="login()">登入</button>
+      <div id="login-msg" style="color:red; margin-top:12px;"></div>
+    </div>
+    <div class="chatroom" id="chatroom">
+      <div class="chat-header"><span id="current-user"></span>，你好！<button class="logout" onclick="logout()">登出</button></div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <form class="chat-actions" id="chat-form" onsubmit="sendMsg(event)">
+        <input type="text" id="msg-input" placeholder="輸入聊天內容" autocomplete="off" required/>
+        <input type="file" id="file-input" title="上傳檔案"/>
+        <button type="submit">送出</button>
+      </form>
+    </div>
   </div>
-  <script>
-    const postForm = document.getElementById('postForm');
-    const posts = document.getElementById('posts');
-    const previewArea = document.getElementById('previewArea');
-    let imageDataURL = "";
-
-    document.getElementById('imageInput').addEventListener('change', function(e){
-      const file = e.target.files[0];
-      if (file){
-        const reader = new FileReader();
-        reader.onload = function(ev){
-          imageDataURL = ev.target.result;
-          previewArea.innerHTML = `<img src="${imageDataURL}" style="max-width:100%;border-radius:7px;" alt="預覽圖"/>`;
-        }
-        reader.readAsDataURL(file);
-      }else{
-        imageDataURL = "";
-        previewArea.innerHTML = "";
+<script>
+  // 用localStorage簡單模擬帳號（不可用於正式環境！）
+  const dbKey = "DEMO-Accounts", msgKey="DEMO-Messages";
+  function register() {
+    const u = document.getElementById('register-username').value.trim();
+    const p = document.getElementById('register-password').value.trim();
+    let users = JSON.parse(localStorage.getItem(dbKey)||"{}");
+    if(!u || !p || p.length<4){ showLoginMsg("帳號或密碼格式錯誤"); return; }
+    if(users[u]) { showLoginMsg("用戶已存在！"); return;}
+    users[u] = {pw:p};
+    localStorage.setItem(dbKey, JSON.stringify(users));
+    showLoginMsg("註冊成功請登入", true);
+  }
+  function login(){
+    const u = document.getElementById('login-username').value.trim();
+    const p = document.getElementById('login-password').value;
+    let users = JSON.parse(localStorage.getItem(dbKey)||"{}");
+    if(users[u] && users[u].pw===p){
+      sessionStorage.setItem("demoUser", u);
+      showRoom();
+    }else{
+      showLoginMsg("帳密錯誤，請重試");
+    }
+  }
+  function showLoginMsg(msg,suc){
+    const el=document.getElementById('login-msg');
+    el.style.color=suc?"green":"red"; el.textContent=msg;
+    if(suc) setTimeout(()=>el.textContent="", 1500);
+  }
+  function logout(){
+    sessionStorage.removeItem("demoUser");
+    document.getElementById("chatroom").style.display="none";
+    document.getElementById("login-panel").style.display="";
+  }
+  function showRoom(){
+    const user = sessionStorage.getItem("demoUser");
+    if(!user) return;
+    document.getElementById('current-user').innerText = user;
+    document.getElementById('chatroom').style.display="flex";
+    document.getElementById('login-panel').style.display="none";
+    loadMsgs();
+  }
+  // 聊天
+  function sendMsg(e){
+    e.preventDefault();
+    const user = sessionStorage.getItem("demoUser");
+    const msgBox = document.getElementById("msg-input");
+    const fileInput = document.getElementById("file-input");
+    let messages = JSON.parse(localStorage.getItem(msgKey)||"[]");
+    let msgObj = {user, text:msgBox.value, time:new Date().toLocaleString()};
+    if(fileInput.files && fileInput.files[0]){
+      const f = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        msgObj.file = {
+          name: f.name,
+          url: ev.target.result,
+          type: f.type
+        };
+        messages.push(msgObj);
+        localStorage.setItem(msgKey, JSON.stringify(messages));
+        msgBox.value=""; fileInput.value="";
+        loadMsgs();
       }
+      reader.readAsDataURL(f);
+    }else{
+      messages.push(msgObj);
+      localStorage.setItem(msgKey, JSON.stringify(messages));
+      msgBox.value=""; fileInput.value="";
+      loadMsgs();
+    }
+  }
+  // 顯示訊息
+  function loadMsgs(){
+    const container = document.getElementById("chat-messages");
+    const messages = JSON.parse(localStorage.getItem(msgKey)||"[]");
+    container.innerHTML="";
+    messages.forEach(m=>{
+      let html = `<div class="message"><span class="sender">${m.user}</span><span class="timestamp">${m.time}</span><br>`;
+      if(m.text) html += `<span class="msg-txt">${m.text.replace(/</g,"&lt;")}</span><br>`;
+      if(m.file){
+        if(m.file.type.startsWith("image")) html += `<img src="${m.file.url}" alt="${m.file.name}" style="max-width:120px; margin-top:8px; border-radius:7px"><br>`;
+        html += `<a href="${m.file.url}" download="${m.file.name}" class="file-link">下載：${m.file.name}</a>`;
+      }
+      html += `</div>`;
+      container.innerHTML += html;
     });
-
-    postForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const caption = document.getElementById('caption').value.trim();
-      if (!caption && !imageDataURL) return;
-      const time = new Date().toLocaleString();
-      let html = `<div class="post">`;
-      if (imageDataURL) html += `<img src="${imageDataURL}" alt="分享美好圖片">`;
-      if (caption) html += `<div class="caption">${caption}</div>`;
-      html += `<div class="date">於 ${time} 分享</div></div>`;
-      posts.insertAdjacentHTML('afterbegin', html);
-      postForm.reset();
-      imageDataURL = "";
-      previewArea.innerHTML = "";
-    });
-  </script>
+    container.scrollTop = 1000000;
+  }
+  // 初始進入判斷
+  if(sessionStorage.getItem("demoUser")) showRoom();
+</script>
 </body>
 </html>
