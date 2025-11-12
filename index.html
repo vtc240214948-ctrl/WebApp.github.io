@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>線上編程工具模擬器</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="styles.css">
@@ -10,31 +10,44 @@
 <body>
   <main class="container">
     <h1>Client-side Code Runner</h1>
-    <div class="controls">
+
+    <section class="controls">
       <label for="lang">語言</label>
       <select id="lang">
         <option value="python">Python (Pyodide)</option>
         <option value="javascript">JavaScript (Sandboxed)</option>
+        <option value="java">Java (WASM Runtime)</option>
       </select>
 
-      <button id="run">Run</button>
-      <button id="stop" disabled>Stop</button>
-      <button id="save">Save Snippet</button>
-      <button id="download">Download</button>
-    </div>
+      <div class="buttons">
+        <button id="run">Run</button>
+        <button id="stop" disabled>Stop</button>
+        <button id="save">Save</button>
+        <button id="download">Download</button>
+      </div>
+    </section>
 
-    <h3>程式碼</h3>
-    <textarea id="code" rows="14">print("Hello from Python")</textarea>
+    <section class="editor">
+      <h3>程式碼</h3>
+      <textarea id="code" rows="14">print("Hello from Python")</textarea>
+    </section>
 
-    <div class="extras">
-      <label>Saved snippets</label>
-      <select id="snippets"></select>
-      <button id="loadSnippet">Load</button>
-      <button id="deleteSnippet">Delete</button>
-    </div>
+    <section class="snippets">
+      <h3>程式片段</h3>
+      <div class="extras">
+        <label for="snippets">Saved snippets</label>
+        <select id="snippets"></select>
+        <div class="snippet-buttons">
+          <button id="loadSnippet">Load</button>
+          <button id="deleteSnippet">Delete</button>
+        </div>
+      </div>
+    </section>
 
-    <h3>輸出</h3>
-    <pre id="out" class="output">Ready.</pre>
+    <section class="output-section">
+      <h3>輸出</h3>
+      <pre id="out" class="output">Ready.</pre>
+    </section>
   </main>
 
   <script type="module" src="app.js"></script>
