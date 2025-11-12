@@ -1,41 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Linux 終端模擬器</title>
-
-  <!-- xterm.css CDN -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css"
-  />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Client-side Code Runner (Pyodide + JS)</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Linux 終端模擬器</h1>
-  <div id="terminal"></div>
+  <main class="container">
+    <h1>Client-side Code Runner</h1>
+    <div class="controls">
+      <label for="lang">語言</label>
+      <select id="lang">
+        <option value="python">Python (Pyodide)</option>
+        <option value="javascript">JavaScript (Sandboxed)</option>
+      </select>
 
-  <!-- xterm.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+      <button id="run">Run</button>
+      <button id="stop" disabled>Stop</button>
+      <button id="save">Save Snippet</button>
+      <button id="download">Download</button>
+    </div>
 
-  <script>
-    const term = new Terminal();
-    term.open(document.getElementById("terminal"));
+    <h3>程式碼</h3>
+    <textarea id="code" rows="14">print("Hello from Python")</textarea>
 
-    term.write("Welcome to your Linux terminal!\r\n$ ");
+    <div class="extras">
+      <label>Saved snippets</label>
+      <select id="snippets"></select>
+      <button id="loadSnippet">Load</button>
+      <button id="deleteSnippet">Delete</button>
+    </div>
 
-    term.onKey((e) => {
-      const char = e.key;
+    <h3>輸出</h3>
+    <pre id="out" class="output">Ready.</pre>
+  </main>
 
-      if (char === "\r") {
-        term.write("\r\n$ ");
-      } else if (char === "\u007F") {
-        term.write("\b \b");
-      } else {
-        term.write(char);
-      }
-    });
-  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
