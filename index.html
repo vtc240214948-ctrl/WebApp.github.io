@@ -1,57 +1,69 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>線上編程工具模擬器</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="stylesheet" href="styles.css">
-
+  <meta charset="UTF-8">
+  <title>分享美好事物</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    /* 普通輸出框樣式 */
-    .output {
-      background-color: #ffffff;   /* 白底 */
-      color: #000000;              /* 黑字 */
-      padding: 10px;
-      border: 1px solid #ccc;      /* 淺灰邊框 */
-      border-radius: 4px;
-      font-family: Consolas, "Courier New", monospace;
-      white-space: pre-wrap;       /* 保留換行 */
-      overflow-y: auto;            /* 超出可垂直滾動 */
-    }
+    body { font-family: 'Helvetica Neue', 'Microsoft JhengHei', sans-serif; background: #eef2f3; margin:0; }
+    h1 { background: #80d0c7; color: white; text-align: center; margin: 0 0 25px 0; padding:25px 0 15px 0; border-radius: 0 0 1em 1em; }
+    .container { max-width: 430px; margin: 24px auto; background: white; padding: 1.4em; border-radius: 1em; box-shadow:0 2px 14px #c7ecee88;}
+    textarea, input[type="file"] { width: 100%; font-size: 1.05em; margin-bottom: 1em; box-sizing: border-box; }
+    button { background: #80d0c7; color: #fff; border: none; border-radius: 7px; padding: 8px 18px; font-size: 1em; cursor: pointer; }
+    button:hover { background: #53b2a5; }
+    .posts { margin-top: 28px; }
+    .post { background: #fff; padding: 18px; border-radius: 1em; margin-bottom: 22px; box-shadow: 0 2px 10px #b8e99455; }
+    .post img { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 10px; }
+    .caption { font-size: 1.1em; margin-top: 3px; color: #444; }
+    .date { color: #bbb; font-size: 0.9em; margin-top: 7px; }
   </style>
 </head>
 <body>
-  <main class="container">
-    <h1>線上編程工具模擬器</h1>
+  <h1>🌸 分享美好事物</h1>
+  <div class="container">
+    <form id="postForm">
+      <textarea id="caption" rows="3" placeholder="想說的一句話或故事..." required></textarea>
+      <input type="file" id="imageInput" accept="image/*">
+      <div id="previewArea" style="margin-bottom:12px;"></div>
+      <button type="submit">分享</button>
+    </form>
+    <div class="posts" id="posts"></div>
+  </div>
+  <script>
+    const postForm = document.getElementById('postForm');
+    const posts = document.getElementById('posts');
+    const previewArea = document.getElementById('previewArea');
+    let imageDataURL = "";
 
-    <section class="controls">
-      <label for="lang">語言</label>
-      <select id="lang">
-        <option value="python">Python (Pyodide)</option>
-        <option value="javascript">JavaScript (Sandboxed)</option>
-        <option value="java">Java (WASM Runtime)</option>
-      </select>
+    document.getElementById('imageInput').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if (file){
+        const reader = new FileReader();
+        reader.onload = function(ev){
+          imageDataURL = ev.target.result;
+          previewArea.innerHTML = `<img src="${imageDataURL}" style="max-width:100%;border-radius:7px;" alt="預覽圖"/>`;
+        }
+        reader.readAsDataURL(file);
+      }else{
+        imageDataURL = "";
+        previewArea.innerHTML = "";
+      }
+    });
 
-      <div class="buttons">
-        <button id="run">Run</button>
-        <button id="stop" disabled>Stop</button>
-        <button id="save">Save</button>
-        <button id="download">Download</button>
-      </div>
-    </section>
-
-    <section class="editor">
-      <h3>程式碼</h3>
-      <textarea id="code" rows="14">print("Hello from Python")</textarea>
-    </section>
-
-    <section class="output-section">
-      <h3>輸出</h3>
-      <pre id="out" class="output">Ready.</pre>
-    </section>
-  </main>
-
-  <script type="module" src="app.js"></script>
+    postForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const caption = document.getElementById('caption').value.trim();
+      if (!caption && !imageDataURL) return;
+      const time = new Date().toLocaleString();
+      let html = `<div class="post">`;
+      if (imageDataURL) html += `<img src="${imageDataURL}" alt="分享美好圖片">`;
+      if (caption) html += `<div class="caption">${caption}</div>`;
+      html += `<div class="date">於 ${time} 分享</div></div>`;
+      posts.insertAdjacentHTML('afterbegin', html);
+      postForm.reset();
+      imageDataURL = "";
+      previewArea.innerHTML = "";
+    });
+  </script>
 </body>
 </html>
