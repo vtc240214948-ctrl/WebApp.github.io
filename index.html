@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>簡易聊天室 </title>
+  <title>簡易聊天室</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body { font-family: 'Helvetica Neue', 'Microsoft JhengHei', sans-serif; background: #e7f3fa; margin:0;}
@@ -26,7 +25,7 @@
   </style>
 </head>
 <body>
-  <h1>☁️ 團隊聊天室 </h1>
+  <h1>團隊聊天室</h1>
   <div class="wrapper">
     <div class="login" id="login-panel">
       <h2>登入 / 註冊</h2>
@@ -50,7 +49,6 @@
     </div>
   </div>
 <script>
-  // 用localStorage簡單模擬帳號（不可用於正式環境！）
   const dbKey = "DEMO-Accounts", msgKey="DEMO-Messages";
   function register() {
     const u = document.getElementById('register-username').value.trim();
@@ -91,7 +89,6 @@
     document.getElementById('login-panel').style.display="none";
     loadMsgs();
   }
-  // 聊天
   function sendMsg(e){
     e.preventDefault();
     const user = sessionStorage.getItem("demoUser");
@@ -121,7 +118,6 @@
       loadMsgs();
     }
   }
-  // 顯示訊息
   function loadMsgs(){
     const container = document.getElementById("chat-messages");
     const messages = JSON.parse(localStorage.getItem(msgKey)||"[]");
@@ -138,7 +134,6 @@
     });
     container.scrollTop = 1000000;
   }
-  // 初始進入判斷
   if(sessionStorage.getItem("demoUser")) showRoom();
 </script>
 </body>
