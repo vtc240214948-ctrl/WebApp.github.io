@@ -1,79 +1,41 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="zh-Hant">
 <head>
-  <meta charset="utf-8"/>
-  <title>Client-side Code Runner</title>
-  <style>
-    body{font-family:system-ui;max-width:900px;margin:32px auto}
-    textarea{width:100%;box-sizing:border-box}
-    pre{background:#111;color:#0f0;padding:12px;white-space:pre-wrap}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Linux 終端模擬器</title>
+
+  <!-- xterm.css CDN -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css"
+  />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Client-side Code Runner (Pyodide + JS)</h1>
-  <label>語言</label>
-  <select id="lang">
-    <option value="python">Python (Pyodide)</option>
-    <option value="javascript">JavaScript (Browser)</option>
-  </select>
-  <h3>程式碼</h3>
-  <textarea id="code" rows="12">print("Hello from Python")</textarea>
-  <br/>
-  <button id="run">Run</button>
-  <h3>輸出</h3>
-  <pre id="out"></pre>
+  <h1>Linux 終端模擬器</h1>
+  <div id="terminal"></div>
+
+  <!-- xterm.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
 
   <script>
-    // 載入 Pyodide（CDN），非同步初始化
-    let pyodideReady = false;
-    let pyodide = null;
-    (async () => {
-      const script = document.createElement('script');
-      script.src = "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js";
-      document.head.appendChild(script);
-      script.onload = async () => {
-        pyodide = await loadPyodide();
-        pyodideReady = true;
-        console.log("Pyodide ready");
-      };
-    })();
+    const term = new Terminal();
+    term.open(document.getElementById("terminal"));
 
-    document.getElementById('run').onclick = async () => {
-      const lang = document.getElementById('lang').value;
-      const code = document.getElementById('code').value;
-      const out = document.getElementById('out');
-      out.textContent = 'Running...';
+    term.write("Welcome to your Linux terminal!\r\n$ ");
 
-      try {
-        if (lang === 'javascript') {
-          // 直接在瀏覽器執行（注意安全：不做 eval 的複雜沙盒）
-          const result = (function() {
-            try { return eval(code); }
-            catch(e){ return 'Error: ' + e; }
-          })();
-          out.textContent = String(result === undefined ? '' : result);
-        } else if (lang === 'python') {
-          if (!pyodideReady) { out.textContent = 'Pyodide loading, please wait...'; return; }
-          try {
-            // capture stdout
-            let result = await pyodide.runPythonAsync(`
-import sys, io
-_buf = io.StringIO()
-sys.stdout = _buf
-sys.stderr = _buf
-try:
-${code.split('\n').map(l=>'    '+l).join('\n')}
-except Exception as e:
-    import traceback; traceback.print_exc()
-_buf.getvalue()
-`);
-            out.textContent = result;
-          } catch(e) { out.textContent = 'Error: ' + e; }
-        }
-      } catch (err) {
-        out.textContent = 'Fatal: ' + err;
+    term.onKey((e) => {
+      const char = e.key;
+
+      if (char === "\r") {
+        term.write("\r\n$ ");
+      } else if (char === "\u007F") {
+        term.write("\b \b");
+      } else {
+        term.write(char);
       }
-    };
+    });
   </script>
 </body>
 </html>
